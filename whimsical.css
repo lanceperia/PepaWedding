@@ -95,6 +95,9 @@ h2 {
     color: var(--accent);
     margin-bottom: 5px;
 }
+.venue-block a {
+    color: inherit;
+}
 
 /* GUEST LIST */
 .guest-list {
