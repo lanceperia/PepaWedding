@@ -14,6 +14,7 @@
         html, body {
             height: 100%;
             overflow: hidden;
+            touch-action: none; /* Prevents accidental refreshing/scrolling while swiping */
         }
 
         body {
@@ -45,6 +46,7 @@
             align-items: center;
             justify-content: center;
             min-height: 0;
+            position: relative; /* Essential for click zones */
         }
 
         .book {
@@ -55,6 +57,19 @@
             transform-style: preserve-3d;
             margin: 0 auto;
         }
+
+        /* Invisible Click Zones */
+        .click-zone {
+            position: absolute;
+            top: 0;
+            width: 20%;
+            height: 100%;
+            z-index: 100;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .left-zone { left: 0; }
+        .right-zone { right: 0; }
 
         .page {
             position: absolute;
@@ -81,7 +96,6 @@
             transform: rotateY(-180deg);
         }
 
-        /* Add spine shadow effect */
         .page::before {
             content: '';
             position: absolute;
@@ -89,37 +103,16 @@
             left: 0;
             width: 10px;
             height: 100%;
-            background: linear-gradient(to right, 
-                rgba(0, 0, 0, 0.15) 0%, 
-                transparent 100%);
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.15) 0%, transparent 100%);
             pointer-events: none;
             z-index: 1;
-        }
-
-        /* Add page curl shadow */
-        .page::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            width: 50%;
-            background: linear-gradient(to left, 
-                rgba(0, 0, 0, 0) 0%,
-                rgba(0, 0, 0, 0.03) 100%);
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 1s;
-        }
-
-        .page.flipping::after {
-            opacity: 1;
         }
 
         .controls {
             display: flex;
             gap: 15px;
             flex-shrink: 0;
+            z-index: 101;
         }
 
         .btn {
@@ -138,26 +131,15 @@
             gap: 8px;
         }
 
-        .btn:hover {
+        .btn:hover:not(:disabled) {
             background: #c4a57b;
             color: white;
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn:active {
-            transform: translateY(0);
         }
 
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            background: rgba(255, 255, 255, 0.95);
-            color: #5a4a3a;
-        }
-
-        .btn:disabled:hover {
-            transform: none;
         }
 
         .page-indicator {
@@ -170,10 +152,6 @@
             flex-shrink: 0;
         }
 
-        .arrow {
-            font-size: 18px;
-        }
-
         .swipe-hint {
             text-align: center;
             font-size: 13px;
@@ -182,43 +160,14 @@
             background: rgba(255, 255, 255, 0.9);
             padding: 8px 20px;
             border-radius: 25px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
             animation: fadeInOut 3s ease-in-out infinite;
-            flex-shrink: 0;
         }
 
         @keyframes fadeInOut {
-            0%, 100% { opacity: 0.85; }
+            0%, 100% { opacity: 0.7; }
             50% { opacity: 1; }
         }
 
-        @media (max-width: 768px) {
-            .btn {
-                padding: 10px 18px;
-                font-size: 13px;
-            }
-
-            .page-indicator {
-                font-size: 11px;
-                padding: 6px 16px;
-            }
-
-            .controls {
-                gap: 10px;
-            }
-
-            .swipe-hint {
-                font-size: 11px;
-                padding: 6px 16px;
-            }
-
-            .container-wrapper {
-                gap: 8px;
-                padding: 5px 0;
-            }
-        }
-
-        /* Loading animation */
         .loading {
             position: fixed;
             top: 50%;
@@ -226,18 +175,6 @@
             transform: translate(-50%, -50%);
             font-size: 24px;
             color: #5a4a3a;
-            text-align: center;
-        }
-
-        .loading::after {
-            content: '...';
-            animation: dots 1.5s infinite;
-        }
-
-        @keyframes dots {
-            0%, 20% { content: '.'; }
-            40% { content: '..'; }
-            60%, 100% { content: '...'; }
         }
     </style>
 </head>
@@ -245,42 +182,27 @@
     <div class="loading" id="loading">Loading your invitation</div>
     
     <div class="container-wrapper" id="containerWrapper" style="display: none;">
-        <div class="page-indicator" id="pageIndicator">Page 1 of 5</div>
+        <div class="page-indicator" id="pageIndicator">Page 1 of 6</div>
         
         <div class="book-container">
+            <div class="click-zone left-zone" id="leftZone"></div>
+            <div class="click-zone right-zone" id="rightZone"></div>
+
             <div class="book" id="book">
-                <div class="page" data-page="0">
-                    <img src="./1.png" alt="Wedding Invitation - Page 1">
-                </div>
-                <div class="page" data-page="1">
-                    <img src="./2.png" alt="Wedding Invitation - Page 2">
-                </div>
-                <div class="page" data-page="2">
-                    <img src="./3.png" alt="Wedding Invitation - Page 3">
-                </div>
-                <div class="page" data-page="3">
-                    <img src="./4.png" alt="Wedding Invitation - Page 4">
-                </div>
-                <div class="page" data-page="4">
-                    <img src="./5.png" alt="Wedding Invitation - Page 5">
-                </div>
-                                <div class="page" data-page="5">
-                    <img src="./6.png" alt="Wedding Invitation - Page 6">
-                </div>
+                <div class="page" data-page="0"><img src="./1.png" alt="Page 1"></div>
+                <div class="page" data-page="1"><img src="./2.png" alt="Page 2"></div>
+                <div class="page" data-page="2"><img src="./3.png" alt="Page 3"></div>
+                <div class="page" data-page="3"><img src="./4.png" alt="Page 4"></div>
+                <div class="page" data-page="4"><img src="./5.png" alt="Page 5"></div>
+                <div class="page" data-page="5"><img src="./6.png" alt="Page 6"></div>
             </div>
         </div>
 
-        <div class="swipe-hint">Swipe left/right or use buttons to flip pages</div>
+        <div class="swipe-hint">Tap sides, swipe, or click the button below to flip</div>
 
         <div class="controls">
-            <button class="btn" id="prevBtn" disabled>
-                <span class="arrow">←</span>
-                Previous
-            </button>
-            <button class="btn" id="nextBtn">
-                Next
-                <span class="arrow">→</span>
-            </button>
+            <button class="btn" id="prevBtn" disabled><span class="arrow">←</span> Previous</button>
+            <button class="btn" id="nextBtn">Next <span class="arrow">→</span></button>
         </div>
     </div>
 
@@ -293,15 +215,15 @@
         const pageIndicator = document.getElementById('pageIndicator');
         const loading = document.getElementById('loading');
         const containerWrapper = document.getElementById('containerWrapper');
+        const leftZone = document.getElementById('leftZone');
+        const rightZone = document.getElementById('rightZone');
 
-        // Preload images
+        // Preload Logic
         let imagesLoaded = 0;
         const images = document.querySelectorAll('.page img');
-        
         images.forEach(img => {
-            if (img.complete) {
-                imageLoaded();
-            } else {
+            if (img.complete) imageLoaded();
+            else {
                 img.addEventListener('load', imageLoaded);
                 img.addEventListener('error', imageLoaded);
             }
@@ -312,110 +234,70 @@
             if (imagesLoaded === images.length) {
                 loading.style.display = 'none';
                 containerWrapper.style.display = 'flex';
+                updatePage();
             }
         }
 
         function updatePage() {
-            // Add flipping animation class
-            pages.forEach((page, index) => {
-                if (index === currentPage - 1 || index === currentPage) {
-                    page.classList.add('flipping');
-                    setTimeout(() => page.classList.remove('flipping'), 1000);
-                }
-            });
-
-            // Flip all pages up to current page and update z-index
             pages.forEach((page, index) => {
                 if (index < currentPage) {
                     page.classList.add('flipped');
-                    // Flipped pages go to back in order
                     page.style.zIndex = index;
                 } else {
                     page.classList.remove('flipped');
-                    // Current and future pages stacked with current on top
                     page.style.zIndex = totalPages - index;
                 }
             });
 
-            // Update indicator
             pageIndicator.textContent = `Page ${currentPage + 1} of ${totalPages}`;
-
-            // Update buttons
             prevBtn.disabled = currentPage === 0;
             nextBtn.disabled = currentPage === totalPages - 1;
         }
 
-        function nextPage() {
-            if (currentPage < totalPages - 1) {
-                currentPage++;
-                updatePage();
-            }
-        }
+        function nextPage() { if (currentPage < totalPages - 1) { currentPage++; updatePage(); } }
+        function prevPage() { if (currentPage > 0) { currentPage--; updatePage(); } }
 
-        function prevPage() {
-            if (currentPage > 0) {
-                currentPage--;
-                updatePage();
-            }
-        }
+        // Click Zones
+        leftZone.addEventListener('click', prevPage);
+        rightZone.addEventListener('click', nextPage);
 
-        // Button controls
+        // Buttons
         nextBtn.addEventListener('click', nextPage);
         prevBtn.addEventListener('click', prevPage);
 
-        // Keyboard controls
+        // Keyboard
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight') {
-                nextPage();
-            } else if (e.key === 'ArrowLeft') {
-                prevPage();
-            }
+            if (e.key === 'ArrowRight') nextPage();
+            else if (e.key === 'ArrowLeft') prevPage();
         });
 
-        // Touch/swipe controls
+        // Swipe Logic (Fixed)
         let touchStartX = 0;
-        let touchEndX = 0;
-
         document.addEventListener('touchstart', (e) => {
             touchStartX = e.changedTouches[0].screenX;
         }, { passive: true });
 
         document.addEventListener('touchend', (e) => {
-            touchEndX = e.changedTouches[0].softenX;
-            handleSwipe();
-        }, { passive: true });
-
-        function handleSwipe() {
+            const touchEndX = e.changedTouches[0].screenX; // Fixed: was .softenX
             const swipeThreshold = 50;
             const diff = touchStartX - touchEndX;
 
             if (Math.abs(diff) > swipeThreshold) {
-                if (diff > 0) {
-                    // Swipe left - next page
-                    nextPage();
-                } else {
-                    // Swipe right - previous page
-                    prevPage();
-                }
+                if (diff > 0) nextPage();
+                else prevPage();
             }
-        }
+        }, { passive: true });
 
-        // Mouse wheel controls
+        // Wheel
         let scrollTimeout;
         document.addEventListener('wheel', (e) => {
-            e.preventDefault();
             clearTimeout(scrollTimeout);
             scrollTimeout = setTimeout(() => {
-                if (e.deltaY > 0) {
-                    nextPage();
-                } else if (e.deltaY < 0) {
-                    prevPage();
-                }
-            }, 50);
-        }, { passive: false });
+                if (e.deltaY > 0) nextPage();
+                else if (e.deltaY < 0) prevPage();
+            }, 100);
+        }, { passive: true });
 
-        // Initialize
-        updatePage();
     </script>
 </body>
 </html>
