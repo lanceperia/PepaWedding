@@ -3,265 +3,411 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patricia + Lance Wedding</title>
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="whimsical.css">
-    <link rel="stylesheet" href="attire.css">
+    <title>Patricia & Lance - Wedding Invitation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #f5e6d3 0%, #e8d5c4 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .container-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 900px;
+            height: 100%;
+            max-height: 100vh;
+            gap: 10px;
+            padding: 10px 0;
+        }
+
+        .book-container {
+            perspective: 2000px;
+            width: 100%;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+        }
+
+        .book {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            max-height: 100%;
+            transform-style: preserve-3d;
+            margin: 0 auto;
+        }
+
+        .page {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: white;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
+            transform-origin: left;
+            transform-style: preserve-3d;
+            transition: transform 1s cubic-bezier(0.645, 0.045, 0.355, 1);
+            border-radius: 0 5px 5px 0;
+            overflow: hidden;
+        }
+
+        .page img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            background: white;
+        }
+
+        .page.flipped {
+            transform: rotateY(-180deg);
+        }
+
+        /* Add spine shadow effect */
+        .page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 10px;
+            height: 100%;
+            background: linear-gradient(to right, 
+                rgba(0, 0, 0, 0.15) 0%, 
+                transparent 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Add page curl shadow */
+        .page::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 50%;
+            background: linear-gradient(to left, 
+                rgba(0, 0, 0, 0) 0%,
+                rgba(0, 0, 0, 0.03) 100%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        .page.flipping::after {
+            opacity: 1;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #c4a57b;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 15px;
+            font-family: 'Georgia', serif;
+            color: #5a4a3a;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: #c4a57b;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: rgba(255, 255, 255, 0.95);
+            color: #5a4a3a;
+        }
+
+        .btn:disabled:hover {
+            transform: none;
+        }
+
+        .page-indicator {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 13px;
+            color: #5a4a3a;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+        }
+
+        .arrow {
+            font-size: 18px;
+        }
+
+        .swipe-hint {
+            text-align: center;
+            font-size: 12px;
+            color: #5a4a3a;
+            opacity: 0.7;
+            animation: fadeInOut 3s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.7; }
+        }
+
+        @media (max-width: 768px) {
+            .btn {
+                padding: 10px 18px;
+                font-size: 13px;
+            }
+
+            .page-indicator {
+                font-size: 11px;
+                padding: 6px 16px;
+            }
+
+            .controls {
+                gap: 10px;
+            }
+
+            .swipe-hint {
+                font-size: 11px;
+            }
+
+            .container-wrapper {
+                gap: 8px;
+                padding: 5px 0;
+            }
+        }
+
+        /* Loading animation */
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: #5a4a3a;
+            text-align: center;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+    </style>
 </head>
 <body>
-
-    <header>
-        <nav>
-            <a href="#home">Home</a>
-            <a href="#attire">Attire</a>
-            <a href="#bring">Registry</a>
-            <a href="#location">Location</a>
-            <a href="#rsvp">RSVP</a>
-        </nav>
-    </header>
-
-    <section id="home">
-        <div class="container">
-            <p class="sub-header">You are invited to the wedding of</p>
-            <h1>Lance <span class="break-mobile">&</span> Patricia</h1>
-            <div style="margin: 30px 0; border-top: 1px solid var(--accent); border-bottom: 1px solid var(--accent); padding: 20px 0; display: inline-block;">
-                <span style="font-size: 1.4rem; letter-spacing: 3px;">OCTOBER 9, 2026</span><br>
-                <span style="font-size: 1rem; letter-spacing: 5px; opacity: 0.8;">AT 12:30 PM</span>
-            </div>
-        </div>
-    </section>
-
-    <section id="attire">
-        <div class="container glass-card" style="text-align: center; padding: 40px 20px;">
-            <h2 style="margin-bottom: 10px;">Wedding Attire</h2>
-            
-            <h3 style="color: #777; margin-bottom: 15px; letter-spacing: 2px; text-transform: uppercase; font-size: 1.1rem;">Semi-Formal</h3>
-            
-            <p style="font-size: 1.1rem; margin-bottom: 20px;">
-                We invite you to celebrate with us in <strong>Pastel</strong> tones.
-            </p>
-
-            <div style="background-color: rgba(0,0,0,0.03); padding: 15px; border-radius: 8px; margin: 0 auto 30px; max-width: 500px;">
-                <p style="margin: 0; font-size: 0.95rem; line-height: 1.5;">
-                    <strong>A Note on Colors:</strong><br>
-                    We kindly ask guests to avoid wearing black or white dresses/shirts.<br>
-                    <span style="opacity: 0.8;">(Black trousers are perfectly fine)</span>
-                </p>
-            </div>
-
-            <div class="palette-container" style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
-                <div class="swatch-wrapper" style="display: flex; flex-direction: column; align-items: center; width: 80px;">
-                    <div class="swatch" style="background-color: #ffded5; width: 50px; height: 50px; border-radius: 50%; margin-bottom: 8px; border: 1px solid rgba(0,0,0,0.05);"></div>
-                    <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #666;">Pale Pink</span>
-                </div>
-                <div class="swatch-wrapper" style="display: flex; flex-direction: column; align-items: center; width: 80px;">
-                    <div class="swatch" style="background-color: #ffc7ae; width: 50px; height: 50px; border-radius: 50%; margin-bottom: 8px; border: 1px solid rgba(0,0,0,0.05);"></div>
-                    <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #666;">Peach</span>
-                </div>
-                <div class="swatch-wrapper" style="display: flex; flex-direction: column; align-items: center; width: 80px;">
-                    <div class="swatch" style="background-color: #e8d6ec; width: 50px; height: 50px; border-radius: 50%; margin-bottom: 8px; border: 1px solid rgba(0,0,0,0.05);"></div>
-                    <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #666;">Lavender</span>
-                </div>
-                <div class="swatch-wrapper" style="display: flex; flex-direction: column; align-items: center; width: 80px;">
-                    <div class="swatch" style="background-color: #c8e2ef; width: 50px; height: 50px; border-radius: 50%; margin-bottom: 8px; border: 1px solid rgba(0,0,0,0.05);"></div>
-                    <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #666;">Light Blue</span>
-                </div>
-                <div class="swatch-wrapper" style="display: flex; flex-direction: column; align-items: center; width: 80px;">
-                    <div class="swatch" style="background-color: #fef6d4; width: 50px; height: 50px; border-radius: 50%; margin-bottom: 8px; border: 1px solid rgba(0,0,0,0.05);"></div>
-                    <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #666;">Soft Yellow</span>
-                </div>
-            </div>
-
-            <p style="font-size: 0.9rem; opacity: 0.7; font-style: italic; margin-top: 30px;">
-                Thank you for helping us bring our colorful vision to life!
-            </p>
-        </div>
-    </section>
-
-    <section id="bring">
-        <div class="container glass-card">
-            <h2>A Note on Gifts</h2>
-            <div style="line-height: 2;">
-                <p style=" font-size: 1.4rem; color: var(--accent);">Your presence means the world to us!</p>
-                <p>If you’d like to give a little something more, a <b>CASH GIFT</b> would be deeply appreciated as we start our journey together.</p>
-                <p><i>Thank you for your love and support!</i></p>
-            </div>
-        </div>
-    </section>
-
-    <section id="location">
-        <div class="container glass-card">
-            <h2>Location Details</h2>
-            
-            <div class="venue-block">
-                <div class="venue-title">Church</div>
-                <p>
-                    <a target="_blank" href="https://www.google.com/maps/dir/?api=1&origin=My+Location&destination=Our+Lady+of+Lourdes+Parish+Church+-+Silang+Junction+North,+Tagaytay+City,+Cavite+(Diocese+of+Imus),+Tagaytay+-+Nasugbu+Highway,+Tagaytay+City,+Cavite&travelmode=driving" style="text-decoration: none; color: inherit;">
-                        <strong>OUR LADY OF LOURDES PARISH CHURCH</strong>
-                        <br>Silang Junction North, Tagaytay City
-                        <br><small style="opacity: 0.7;">(Click for Directions)</small>
-                    </a>
-                </p>
-            </div>
-
-            <div style="width: 50px; height: 1px; background: var(--accent); margin: 20px auto; opacity: 0.3;"></div>
-
-            <div class="venue-block">
-                <div class="venue-title">Reception</div>
-                <p>
-                    <a target="_blank" href="https://www.google.com/maps/dir/?api=1&origin=My+Location&destination=Hillbarn+Tagaytay+Events+Place,+Daang+Luma,+Tagaytay+City,+Cavite&travelmode=driving" style="text-decoration: none; color: inherit;">
-                        <strong>HILLBARN TAGAYTAY EVENTS PLACE</strong>
-                        <br>Daang Luma, Tagaytay City
-                        <br><small style="opacity: 0.7;">(Click for Directions)</small>
-                    </a>
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- RSVP Option A: Specific Guests -->
-    <section id="rsvp">
-        <div class="container">
-            <h2>Will You Join Us?</h2>
-            <p>We reserved <b>2 seats</b> for you</p>
-            <p>Kindly respond for each member of your party.</p>
-            
-            <div class="guest-list" id="list-container">
-                <div class="guest-item" data-id="guest_001">
-                    <span class="guest-name">John Doe</span>
-                    <div class="choice-group">
-                        <button class="btn-choice yes" onclick="setChoice(this)">YES</button>
-                        <button class="btn-choice no" onclick="setChoice(this)">NO</button>
-                    </div>
-                </div>
-                 <div class="guest-item" data-id="guest_002">
-                    <span class="guest-name">Jane Doe</span>
-                    <div class="choice-group">
-                        <button class="btn-choice yes" onclick="setChoice(this)">YES</button>
-                        <button class="btn-choice no" onclick="setChoice(this)">NO</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="capacity-note">
-                "While we wish we could celebrate with all of our loved ones, we have chosen to keep our celebration intimate. We kindly ask that only those specifically listed or confirmed as a plus-one attend."
-            </div>
-
-            <br>
-            <button id="save-btn" onclick="submitRSVP()">Confirm RSVP</button>
-        </div>
-    </section>
-
-    <!-- RSVP Option B: With Plus One -->
-    <section id="rsvp">
-        <div class="container">
-            <h2>Will You Join Us?</h2>
-            <p>We reserved <b>2 seats</b> for you</p>
-            <p>Kindly respond for each member of your party.</p>
-            
-            <div class="guest-list" id="list-container">
-                <div class="guest-item" data-id="guest_001">
-                    <span class="guest-name">John Doe</span>
-                    <div class="choice-group">
-                        <button class="btn-choice yes" onclick="setChoice(this)">YES</button>
-                        <button class="btn-choice no" onclick="setChoice(this)">NO</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="plus-one-area">
-                <p class="plus-one-instruction">Your invitation includes a +1 guest.</p>
-                <button id="add-guest-btn" onclick="addNewGuest()">+ Register Guest Name</button>
-            </div>
-
-            <div class="capacity-note">
-                "While we wish we could celebrate with all of our loved ones, we have chosen to keep our celebration intimate. We kindly ask that only those specifically listed or confirmed as a plus-one attend."
-            </div>
-
-            <br>
-            <button id="save-btn" onclick="submitRSVP()">Confirm RSVP</button>
-        </div>
-    </section>
-
-    <!-- RSVP Option C: Specific Guest and specific Plus One -->
-    <section id="rsvp">
-        <div class="container">
-            <h2>Will You Join Us?</h2>
-            <p>We reserved <b>2 seats</b> for you</p>
-            <p>Kindly respond for each member of your party.</p>
-            
-            <div class="guest-list" id="list-container">
-                <div class="guest-item" data-id="guest_001">
-                    <span class="guest-name">John Doe</span>
-                    <div class="choice-group">
-                        <button class="btn-choice yes" onclick="setChoice(this)">YES</button>
-                        <button class="btn-choice no" onclick="setChoice(this)">NO</button>
-                    </div>
-                </div>
-                <div class="guest-item new-guest" data-id="plus_one_2">
-                    <div style="display:flex; align-items:center; flex:1; gap:10px; width:100%;">
-                        <input type="text" class="name-input" placeholder="Guest's Full Name">
-                    </div>
-                    <div class="choice-group">
-                        <button class="btn-choice yes" onclick="setChoice(this)">YES</button>
-                        <button class="btn-choice no" onclick="setChoice(this)">NO</button>
-                    </div>
-                </div>
-
-            </div>
-            
-            <div class="capacity-note">
-                "While we wish we could celebrate with all of our loved ones, we have chosen to keep our celebration intimate. We kindly ask that only those specifically listed or confirmed as a plus-one attend."
-            </div>
-
-            <br>
-            <button id="save-btn" onclick="submitRSVP()">Confirm RSVP</button>
-        </div>
-    </section>
-
-    <!-- RSVP Option D: Free text -->
-    <section id="rsvp">
-        <div class="container">
-            <h2>Will You Join Us?</h2>
-            <p>We reserved <b>2 seats</b> for you</p>
-            <p>Kindly respond for each member of your party.
-            
-            <div class="guest-list" id="list-container">
-                <div class="guest-item new-guest" data-id="plus_one_1">
-                    <div style="display:flex; align-items:center; flex:1; gap:10px; width:100%;">
-                        <input type="text" class="name-input" placeholder="Guest's Full Name">
-                        <button style="background:none; border:none; color:#ef9a9a; cursor:pointer;" onclick="removeGuest(this)">✕</button>
-                    </div>
-                    <div class="choice-group">
-                        <button class="btn-choice yes" onclick="setChoice(this)">YES</button>
-                        <button class="btn-choice no" onclick="setChoice(this)">NO</button>
-                    </div>
-                </div>
-                <div class="guest-item new-guest" data-id="plus_one_2">
-                    <div style="display:flex; align-items:center; flex:1; gap:10px; width:100%;">
-                        <input type="text" class="name-input" placeholder="Guest's Full Name">
-                        <button style="background:none; border:none; color:#ef9a9a; cursor:pointer;" onclick="removeGuest(this)">✕</button>
-                    </div>
-                    <div class="choice-group">
-                        <button class="btn-choice yes" onclick="setChoice(this)">YES</button>
-                        <button class="btn-choice no" onclick="setChoice(this)">NO</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="capacity-note">
-                "While we wish we could celebrate with all of our loved ones, we have chosen to keep our celebration intimate. We kindly ask that only those specifically listed or confirmed as a plus-one attend."
-            </div>
-
-            <br>
-            <button id="save-btn" onclick="submitRSVP()">Confirm RSVP</button>
-        </div>
-    </section>
-
+    <div class="loading" id="loading">Loading your invitation</div>
     
+    <div class="container-wrapper" id="containerWrapper" style="display: none;">
+        <div class="page-indicator" id="pageIndicator">Page 1 of 5</div>
+        
+        <div class="book-container">
+            <div class="book" id="book">
+                <div class="page" data-page="0">
+                    <img src="./1.png" alt="Wedding Invitation - Page 1">
+                </div>
+                <div class="page" data-page="1">
+                    <img src="./2.png" alt="Wedding Invitation - Page 2">
+                </div>
+                <div class="page" data-page="2">
+                    <img src="./3.png" alt="Wedding Invitation - Page 3">
+                </div>
+                <div class="page" data-page="3">
+                    <img src="./4.png" alt="Wedding Invitation - Page 4">
+                </div>
+                <div class="page" data-page="4">
+                    <img src="./5.png" alt="Wedding Invitation - Page 5">
+                </div>
+            </div>
+        </div>
 
-    <script src="rsvp.js"></script>
+        <div class="swipe-hint">Swipe left/right or use buttons to flip pages</div>
 
+        <div class="controls">
+            <button class="btn" id="prevBtn" disabled>
+                <span class="arrow">←</span>
+                Previous
+            </button>
+            <button class="btn" id="nextBtn">
+                Next
+                <span class="arrow">→</span>
+            </button>
+        </div>
+    </div>
 
+    <script>
+        let currentPage = 0;
+        const totalPages = 5;
+        const pages = document.querySelectorAll('.page');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const pageIndicator = document.getElementById('pageIndicator');
+        const loading = document.getElementById('loading');
+        const containerWrapper = document.getElementById('containerWrapper');
+
+        // Preload images
+        let imagesLoaded = 0;
+        const images = document.querySelectorAll('.page img');
+        
+        images.forEach(img => {
+            if (img.complete) {
+                imageLoaded();
+            } else {
+                img.addEventListener('load', imageLoaded);
+                img.addEventListener('error', imageLoaded);
+            }
+        });
+
+        function imageLoaded() {
+            imagesLoaded++;
+            if (imagesLoaded === images.length) {
+                loading.style.display = 'none';
+                containerWrapper.style.display = 'flex';
+            }
+        }
+
+        function updatePage() {
+            // Add flipping animation class
+            pages.forEach((page, index) => {
+                if (index === currentPage - 1 || index === currentPage) {
+                    page.classList.add('flipping');
+                    setTimeout(() => page.classList.remove('flipping'), 1000);
+                }
+            });
+
+            // Flip all pages up to current page and update z-index
+            pages.forEach((page, index) => {
+                if (index < currentPage) {
+                    page.classList.add('flipped');
+                    // Flipped pages go to back in order
+                    page.style.zIndex = index;
+                } else {
+                    page.classList.remove('flipped');
+                    // Current and future pages stacked with current on top
+                    page.style.zIndex = totalPages - index;
+                }
+            });
+
+            // Update indicator
+            pageIndicator.textContent = `Page ${currentPage + 1} of ${totalPages}`;
+
+            // Update buttons
+            prevBtn.disabled = currentPage === 0;
+            nextBtn.disabled = currentPage === totalPages - 1;
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages - 1) {
+                currentPage++;
+                updatePage();
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 0) {
+                currentPage--;
+                updatePage();
+            }
+        }
+
+        // Button controls
+        nextBtn.addEventListener('click', nextPage);
+        prevBtn.addEventListener('click', prevPage);
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                nextPage();
+            } else if (e.key === 'ArrowLeft') {
+                prevPage();
+            }
+        });
+
+        // Touch/swipe controls
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, { passive: true });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    // Swipe left - next page
+                    nextPage();
+                } else {
+                    // Swipe right - previous page
+                    prevPage();
+                }
+            }
+        }
+
+        // Mouse wheel controls
+        let scrollTimeout;
+        document.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                if (e.deltaY > 0) {
+                    nextPage();
+                } else if (e.deltaY < 0) {
+                    prevPage();
+                }
+            }, 50);
+        }, { passive: false });
+
+        // Initialize
+        updatePage();
+    </script>
 </body>
 </html>
