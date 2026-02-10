@@ -176,19 +176,15 @@
             font-size: 24px;
             color: #5a4a3a;
         }
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s infinite;
+        }
 
         @keyframes dots {
-            0%, 20% {
-                content: '.';
-            }
-
-            40% {
-                content: '..';
-            }
-
-            60%, 100% {
-                content: '...';
-            }
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
         }
     </style>
 </head>
